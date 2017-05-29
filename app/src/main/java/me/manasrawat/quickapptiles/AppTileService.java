@@ -1,26 +1,28 @@
 package me.manasrawat.quickapptiles;
 
+import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 import android.util.Base64;
+import android.util.Log;
 
 /**
  * Created by manas on 09/01/2017.
  */
 
-@SuppressWarnings("All")
+@TargetApi(Build.VERSION_CODES.N)
 public class AppTileService extends TileService {
 
-    private String label, pack;
-    private Icon icon;
-    private SharedPreferences sharedPreferences;
+    private String pack, TAG = getClass().getSimpleName();
+    private Tile tile;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -30,22 +32,24 @@ public class AppTileService extends TileService {
 
     @Override
     public void onTileAdded() {
+        Log.i(TAG, "Tile added");
         requestListeningState(getApplicationContext(), new ComponentName(getApplicationContext(), AppTileService.class));
     }
 
     @Override
     public void onStartListening () {
-        Tile tile = getQsTile();
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        tile = getQsTile();
+        tile.setState(Tile.STATE_ACTIVE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        label = sharedPreferences.getString("label", "Quick App Tiles");
+        String label = sharedPreferences.getString("label", "Quick App Tiles");
         pack = sharedPreferences.getString("pack", getApplicationContext().getPackageName());
         tile.setLabel(label);
 
         String encoded = sharedPreferences.getString("icon", "icon");
         byte[] bits = Base64.decode(encoded.getBytes(), Base64.DEFAULT);
         Bitmap decodee = BitmapFactory.decodeByteArray(bits, 0, bits.length);
-        icon = Icon.createWithBitmap(decodee);
+        Icon icon = Icon.createWithBitmap(decodee);
         tile.setIcon(icon);
 
         tile.updateTile();
@@ -53,9 +57,13 @@ public class AppTileService extends TileService {
 
     @Override
     public void onClick() {
-        Intent launch = getPackageManager().getLaunchIntentForPackage(pack);
-        launch.addCategory(Intent.CATEGORY_LAUNCHER);
-        startActivityAndCollapse(launch);
+        unlockAndRun(new Runnable() {
+            @Override
+            public void run() {
+                Intent launch = getPackageManager().getLaunchIntentForPackage(pack);
+                startActivityAndCollapse(launch);
+            }
+        });
     }
 
 }

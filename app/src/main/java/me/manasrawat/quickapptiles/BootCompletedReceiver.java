@@ -5,15 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import static android.content.Intent.ACTION_BOOT_COMPLETED;
+
 public class BootCompletedReceiver extends BroadcastReceiver {
+
+    private String TAG = getClass().getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        if (intent.getAction() == "android.intent.action.BOOT_COMPLETED") {
+        if (ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
             Intent serviceIntent = new Intent(context, AppTileService.class);
             context.startService(serviceIntent);
-            Log.i("Quick App Tiles", "AppTileService started on boot completion");
+            Log.i(TAG, "AppTileService started on boot completion");
         }
 
     }
