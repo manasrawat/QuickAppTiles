@@ -1,4 +1,4 @@
-package me.cyource.qstiles;
+package me.manasrawat.quickapptiles;
 
 import org.junit.Test;
 
