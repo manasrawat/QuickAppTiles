@@ -1,24 +1,21 @@
 package me.manasrawat.quickapptiles;
 
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.provider.Settings;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import cyanogenmod.app.CMStatusBarManager;
-import cyanogenmod.app.CustomTile;
+import android.widget.Toast;
 import cyanogenmod.os.Build;
 
 import java.io.ByteArrayOutputStream;
@@ -29,10 +26,13 @@ import static me.manasrawat.quickapptiles.ApplicationActivity.*;
 /**
  * Created by manas on 09/01/2017.
  */
+
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>  {
 
     private List<ApplicationInfo> list;
+    private String TAG = getClass().getSimpleName();
     public static int checkedPosition;
+    //public static final int CUSTOM_TILE_ID = 1;
 
     public RecyclerViewAdapter(List<ApplicationInfo> list) {
         this.list = list;
@@ -51,7 +51,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             appSelect = (RadioButton) v.findViewById(R.id.appSelect);
         }
     }
-
 
     @Override
     public RecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -75,7 +74,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             public void onClick(View view) {
 
                 if (position != checkedPosition)  {
-                    Intent serviceIntent = new Intent(context, AppTileService.class);
 
                     //Icon Encoding
                     Bitmap encodee = ((BitmapDrawable) icon).getBitmap();
@@ -85,34 +83,26 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     String encoded = Base64.encodeToString(bits, Base64.DEFAULT);
 
                     checkedPosition = position;
-                    if (Build.CM_VERSION.SDK_INT > 0 && (android.os.Build.VERSION.RELEASE == "5.1" || android.os.Build.VERSION.RELEASE == "6.0")) {
-                        Intent prependIntent = packMan.getLaunchIntentForPackage(pack);
-                        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, prependIntent, 0);
-                        Intent settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        settingsIntent.addCategory(Intent.CATEGORY_DEFAULT)
-                                .setData(Uri.parse("package:" + pack));
-                        PendingIntent pendingSettings = PendingIntent.getActivity(context, 0, settingsIntent, 0);
-                        CustomTile tile = new CustomTile.Builder(context)
-                                .setLabel(label)
-                                .setOnClickIntent(pendingIntent)
-                                .setOnSettingsClickIntent(null)
-                                .setOnLongClickIntent(pendingSettings)
-                                .setContentDescription(null)
-                                .setIcon(encodee)
-                                .hasSensitiveData(false)
-                                .build();
-                        CMStatusBarManager.getInstance(context)
-                                .publishTile(1, tile);
-                    } else {
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putInt("item", position)
-                              .putString("pack", pack)
-                              .putString("label", label)
-                              .putString("icon", encoded)
-                              .apply();
-                        notifyDataSetChanged();
+
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("item", position)
+                            .putString("pack", pack)
+                            .putString("label", label)
+                            .putString("icon", encoded)
+                            .apply();
+
+                    if (Build.CM_VERSION.SDK_INT > 0 &&
+                       (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.LOLLIPOP_MR1 ||
+                        android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.M)) {
+                        new CMTileBuilder(context, packMan);
+                    } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        Intent serviceIntent = new Intent(context, AppTileService.class);
                         context.startService(serviceIntent);
+                    } else {
+                        Toast.makeText(context, "Unsupported CM/Android version", Toast.LENGTH_SHORT).show();
+                        Log.i(TAG, "Unsupported CM/Android version");
                     }
+                    notifyDataSetChanged();
                 }
             }
         });

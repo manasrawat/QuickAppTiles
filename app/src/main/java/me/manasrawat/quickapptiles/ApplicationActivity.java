@@ -8,16 +8,16 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.service.quicksettings.TileService;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static android.service.quicksettings.TileService.ACTION_QS_TILE_PREFERENCES;
 
 public class ApplicationActivity extends AppCompatActivity {
 
@@ -34,7 +34,7 @@ public class ApplicationActivity extends AppCompatActivity {
         packMan = getPackageManager();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (getIntent().getAction().equals(TileService.ACTION_QS_TILE_PREFERENCES)) {
+        if (ACTION_QS_TILE_PREFERENCES.equals(getIntent().getAction())) {
             Intent settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             settingsIntent.setData(Uri.parse("package:" + sharedPreferences.getString("pack", context.getPackageName())));
             startActivity(settingsIntent);
