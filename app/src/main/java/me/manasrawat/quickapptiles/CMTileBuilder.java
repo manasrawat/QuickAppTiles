@@ -16,9 +16,6 @@ import cyanogenmod.app.CustomTile;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
-/**
- * Created by manas on 30/05/2017.
- */
 public class CMTileBuilder {
 
     public CMTileBuilder(Context context, PackageManager packMan) {

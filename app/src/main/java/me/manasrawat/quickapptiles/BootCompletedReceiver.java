@@ -29,6 +29,6 @@ public class BootCompletedReceiver extends BroadcastReceiver {
                 Log.i(TAG, "Unsupported CM/Android version");
             }
         }
-
     }
+
 }

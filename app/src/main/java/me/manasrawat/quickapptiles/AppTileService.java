@@ -15,18 +15,16 @@ import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
-/**
- * Created by manas on 09/01/2017.
- */
+import static me.manasrawat.quickapptiles.ApplicationActivity.context;
 
 @SuppressLint("Override")
 @TargetApi(Build.VERSION_CODES.N)
 public class AppTileService extends TileService {
 
-    private String pack, TAG = getClass().getSimpleName();
-    private Tile tile;
-    private Intent launch;
+    public String pack, TAG = getClass().getSimpleName();
+    public Tile tile;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -40,14 +38,17 @@ public class AppTileService extends TileService {
         super.onTileAdded();
         Log.i(TAG, "Tile added");
         requestListeningState(getApplicationContext(), new ComponentName(getApplicationContext(), AppTileService.class));
+    }
 
+    @Override
+    public void onTileRemoved() {
+        super.onTileRemoved();
+        Log.i(TAG, "Tile removed");
     }
 
     @Override
     public void onStartListening () {
         super.onStartListening();
-        Log.i(TAG, "Started listening");
-
         tile = getQsTile();
         tile.setState(Tile.STATE_ACTIVE);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -63,6 +64,7 @@ public class AppTileService extends TileService {
         tile.setIcon(icon);
 
         tile.updateTile();
+        Log.i(TAG, "Started listening; state = " + tile.getState());
     }
 
     @Override
@@ -89,8 +91,14 @@ public class AppTileService extends TileService {
     }
 
     public void launchApp() {
-        launch = getPackageManager().getLaunchIntentForPackage(pack);
-        startActivityAndCollapse(launch);
+        Intent launch = getPackageManager().getLaunchIntentForPackage(pack);
+        if (launch != null) {
+            startActivityAndCollapse(launch);
+        } else {
+            Intent collapse = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            getApplicationContext().sendBroadcast(collapse);
+            Toast.makeText(context, "System app is disabled", Toast.LENGTH_SHORT).show();
+        }
     }
 
 }
