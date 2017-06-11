@@ -16,8 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static android.content.Intent.ACTION_PACKAGE_ADDED;
-import static android.content.Intent.ACTION_PACKAGE_REMOVED;
+import static android.content.Intent.*;
 import static android.service.quicksettings.TileService.ACTION_QS_TILE_PREFERENCES;
 
 public class ApplicationActivity extends AppCompatActivity {
@@ -28,6 +27,7 @@ public class ApplicationActivity extends AppCompatActivity {
     public static RecyclerView recyclerView;
     private List<ApplicationInfo> trimmedList;
     private BroadcastReceiver additionOrRemovalReceiver;
+    private RecyclerViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +40,7 @@ public class ApplicationActivity extends AppCompatActivity {
 
         if (ACTION_QS_TILE_PREFERENCES.equals(getIntent().getAction())) {
             Intent settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            settingsIntent.setData(Uri.parse("package:" + sharedPreferences.getString("pack", context.getPackageName())));
+            settingsIntent.setData(Uri.parse("package:" + sharedPreferences.getString("pack", getPackageName())));
             startActivity(settingsIntent);
         }
 
@@ -52,27 +52,32 @@ public class ApplicationActivity extends AppCompatActivity {
 
         trimmedList = new ArrayList<>();
         getApps();
-        final RecyclerViewAdapter adapter = new RecyclerViewAdapter(trimmedList);
+        adapter = new RecyclerViewAdapter(trimmedList);
         recyclerView.setAdapter(adapter);
 
         additionOrRemovalReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String packageName = intent.getData().getSchemeSpecificPart();
-                switch (intent.getAction()) {
-                    case ACTION_PACKAGE_REMOVED:
-                        int i; boolean cont = true; for (i = 0; i < trimmedList.size() && cont; i++)
-                            if (trimmedList.get(i).packageName.equals(packageName)) cont = false;
-                        adapter.removeAt(i - 1);
-                    break;
-                    case ACTION_PACKAGE_ADDED:
-                        List<ApplicationInfo> previousList = new ArrayList<>(trimmedList);
-                        trimmedList.clear();
-                        getApps();
-                        cont = true; for (i = 0; i < trimmedList.size() && cont; i++)
-                            if ((i < previousList.size() && !(previousList.get(i).packageName.equals(trimmedList.get(i).packageName))) || i == trimmedList.size() - 1) cont = false;
-                        adapter.insertAt(i - 1);
-                        break;
+                int i;
+                boolean cont = true;
+                if (ACTION_PACKAGE_REMOVED.equals(intent.getAction()) ||
+                        (ACTION_PACKAGE_CHANGED.equals(intent.getAction()))) {
+                    String packageName = intent.getData().getSchemeSpecificPart();
+                    for (i = 0; i < trimmedList.size() && cont; i++)
+                        if (trimmedList.get(i).packageName.equals(packageName)) cont = false;
+                    adapter.removeAt(i - 1);
+                }
+                List<ApplicationInfo> previousList = new ArrayList<>(trimmedList);
+                trimmedList.clear();
+                getApps();
+                if (ACTION_PACKAGE_ADDED.equals(intent.getAction()) ||
+                        (ACTION_PACKAGE_CHANGED.equals(intent.getAction()) &&
+                                previousList.size() < trimmedList.size())) {
+                    for (i = 0; i < trimmedList.size() && cont; i++)
+                        if ((i < previousList.size() &&
+                                !(previousList.get(i).packageName.equals(trimmedList.get(i).packageName))) ||
+                                i == trimmedList.size() - 1) cont = false;
+                    adapter.insertAt(i - 1);
                 }
             }
         };
@@ -81,12 +86,16 @@ public class ApplicationActivity extends AppCompatActivity {
         intentFilter.addDataScheme("package");
         intentFilter.addAction(ACTION_PACKAGE_ADDED);
         intentFilter.addAction(ACTION_PACKAGE_REMOVED);
+        intentFilter.addAction(ACTION_PACKAGE_CHANGED);
         registerReceiver(additionOrRemovalReceiver, intentFilter);
+
+        recyclerView.scrollToPosition(adapter.checkedPosition);
     }
 
     public void getApps() {
         List<ApplicationInfo> list = packMan.getInstalledApplications(PackageManager.GET_META_DATA);
-        for (ApplicationInfo appInfo : list) if (packMan.getLaunchIntentForPackage(appInfo.packageName) != null) trimmedList.add(appInfo);
+        for (ApplicationInfo appInfo : list) if (packMan.getLaunchIntentForPackage(appInfo.packageName) != null)
+            trimmedList.add(appInfo);
         Collections.sort(trimmedList, new ApplicationInfo.DisplayNameComparator(packMan));
     }
 

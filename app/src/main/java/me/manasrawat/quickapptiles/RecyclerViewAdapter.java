@@ -1,7 +1,6 @@
 package me.manasrawat.quickapptiles;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -16,7 +15,7 @@ import android.widget.*;
 import cyanogenmod.os.Build;
 
 import java.io.ByteArrayOutputStream;
-import java.util.List;
+import java.util.*;
 
 import static me.manasrawat.quickapptiles.ApplicationActivity.*;
 
@@ -25,10 +24,35 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public List<ApplicationInfo> list;
     public int lastCheckedPosition, checkedPosition;
     private String TAG = getClass().getSimpleName();
+    private Intent serviceIntent;
+    private SharedPreferences.Editor editor;
 
-    public RecyclerViewAdapter(List<ApplicationInfo> list) {
-        this.list = list;
-        checkedPosition = sharedPreferences.getInt("item", -1);
+    public RecyclerViewAdapter(List<ApplicationInfo> theList) {
+        list = theList;
+        serviceIntent = new Intent(context, AppTileService.class);
+        editor = sharedPreferences.edit();
+
+        int i;
+        boolean cont = true;
+        if (sharedPreferences.getBoolean("initial", true)) {
+            editor.putBoolean("initial", false).apply();
+            for (i = 0; i <  list.size() && cont; i++)
+                if (list.get(i).packageName.equals(context.getPackageName())) cont = false;
+            checkedPosition = i - 1;
+            setFor(checkedPosition);
+        } else {
+            for (i = 0; i < list.size() && cont; i++)
+                if (list.get(i).packageName.equals(sharedPreferences.getString("pack", context.getPackageName())))
+                    cont = false;
+            if (cont) {
+                checkedPosition = sharedPreferences.getInt("item", -1);
+                if (checkedPosition == list.size()) checkedPosition--;
+                setFor(checkedPosition);
+                context.startService(serviceIntent);
+            } else {
+                checkedPosition = i - 1;
+            }
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -71,22 +95,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
                 if (adapterPosition != checkedPosition)  {
 
-                    //Icon Encoding
-                    Bitmap encodee = ((BitmapDrawable) icon).getBitmap();
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    encodee.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    byte[] bits = stream.toByteArray();
-                    String encoded = Base64.encodeToString(bits, Base64.DEFAULT);
-
-                    lastCheckedPosition = checkedPosition;
-                    checkedPosition = adapterPosition;
-
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putInt("item", adapterPosition)
-                          .putString("pack", pack)
-                          .putString("label", label)
-                          .putString("icon", encoded)
-                          .apply();
+                    selectAndUpdate(icon, adapterPosition, pack, label);
 
                     Log.i(TAG, label + " selected");
                     if (Build.CM_VERSION.SDK_INT > 0 &&
@@ -94,13 +103,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                         android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.M)) {
                         new CMTileBuilder(context, packMan);
                     } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                        Intent serviceIntent = new Intent(context, AppTileService.class);
                         context.startService(serviceIntent);
                     } else {
                         Toast.makeText(context, "Unsupported CM/Android version", Toast.LENGTH_SHORT).show();
                         Log.i(TAG, "Unsupported CM/Android version");
                     }
-
                     notifyItemChanged(lastCheckedPosition);
                     notifyItemChanged(checkedPosition);
                 }
@@ -121,11 +128,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         notifyItemRemoved(i);
         if (checkedPosition == i) {
             if (i == list.size()) i--;
-            ViewHolder viewHolder = (ViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
-            viewHolder.appSelect.performClick();
+            setFor(i);
+            context.startService(serviceIntent);
+
         }
         if (checkedPosition > i) {
-            sharedPreferences.edit().putInt("item", checkedPosition - 1).apply();
+            editor.putInt("item", checkedPosition - 1).apply();
             checkedPosition = sharedPreferences.getInt("item", 0);
         }
         notifyItemRangeChanged(i, list.size());
@@ -134,10 +142,36 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public void insertAt(int i) {
         notifyItemInserted(i);
         if (checkedPosition >= i) {
-            sharedPreferences.edit().putInt("item", checkedPosition + 1).apply();
+            editor.putInt("item", checkedPosition + 1).apply();
             checkedPosition = sharedPreferences.getInt("item", 0);
         }
         notifyItemRangeChanged(i, list.size());
+    }
+
+    public void setFor(int i) {
+        ApplicationInfo info = list.get(i);
+        String label = (String) packMan.getApplicationLabel(info), pack = info.packageName;
+        Drawable icon = packMan.getApplicationIcon(info);
+        selectAndUpdate(icon, i, pack, label);
+    }
+
+    public void selectAndUpdate(Drawable icon, int adapterPosition, String pack, String label) {
+
+        //Icon Encoding
+        Bitmap encodee = ((BitmapDrawable) icon).getBitmap();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        encodee.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bits = stream.toByteArray();
+        String encoded = Base64.encodeToString(bits, Base64.DEFAULT);
+
+        lastCheckedPosition = checkedPosition;
+        checkedPosition = adapterPosition;
+
+        editor.putInt("item", adapterPosition)
+              .putString("pack", pack)
+              .putString("label", label)
+              .putString("icon", encoded)
+              .apply();
     }
 
 }

@@ -17,8 +17,6 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
-import static me.manasrawat.quickapptiles.ApplicationActivity.context;
-
 @SuppressLint("Override")
 @TargetApi(Build.VERSION_CODES.N)
 public class AppTileService extends TileService {
@@ -96,8 +94,8 @@ public class AppTileService extends TileService {
             startActivityAndCollapse(launch);
         } else {
             Intent collapse = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-            getApplicationContext().sendBroadcast(collapse);
-            Toast.makeText(context, "System app is disabled", Toast.LENGTH_SHORT).show();
+            sendBroadcast(collapse);
+            Toast.makeText(getApplicationContext(), "App no longer installed/enabled", Toast.LENGTH_SHORT).show();
         }
     }
 
