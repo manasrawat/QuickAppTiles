@@ -40,6 +40,14 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".CheckedRemovalReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_REMOVED"/>
+                <action android:name="android.intent.action.PACKAGE_CHANGED"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

@@ -25,6 +25,7 @@ public class ApplicationActivity extends AppCompatActivity {
     public static PackageManager packMan;
     public static SharedPreferences sharedPreferences;
     public static RecyclerView recyclerView;
+    public static LinearLayoutManager layoutManager;
     private List<ApplicationInfo> trimmedList;
     private BroadcastReceiver additionOrRemovalReceiver;
     private RecyclerViewAdapter adapter;
@@ -46,7 +47,7 @@ public class ApplicationActivity extends AppCompatActivity {
 
         //RecyclerViewAdapter inflation
         recyclerView = (RecyclerView) findViewById(R.id.recyclees);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
 
@@ -78,6 +79,7 @@ public class ApplicationActivity extends AppCompatActivity {
                                 !(previousList.get(i).packageName.equals(trimmedList.get(i).packageName))) ||
                                 i == trimmedList.size() - 1) cont = false;
                     adapter.insertAt(i - 1);
+                    layoutManager.scrollToPositionWithOffset(i - 1, 0);
                 }
             }
         };
@@ -89,7 +91,7 @@ public class ApplicationActivity extends AppCompatActivity {
         intentFilter.addAction(ACTION_PACKAGE_CHANGED);
         registerReceiver(additionOrRemovalReceiver, intentFilter);
 
-        recyclerView.scrollToPosition(adapter.checkedPosition);
+        layoutManager.scrollToPositionWithOffset(adapter.checkedPosition, 0);
     }
 
     public void getApps() {

@@ -15,7 +15,6 @@ import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
 @SuppressLint("Override")
 @TargetApi(Build.VERSION_CODES.N)
@@ -90,13 +89,10 @@ public class AppTileService extends TileService {
 
     public void launchApp() {
         Intent launch = getPackageManager().getLaunchIntentForPackage(pack);
-        if (launch != null) {
-            startActivityAndCollapse(launch);
-        } else {
-            Intent collapse = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-            sendBroadcast(collapse);
-            Toast.makeText(getApplicationContext(), "App no longer installed/enabled", Toast.LENGTH_SHORT).show();
+        if (launch == null) {
+            launch = getPackageManager().getLaunchIntentForPackage(getPackageName());
         }
+        startActivityAndCollapse(launch);
     }
 
 }
