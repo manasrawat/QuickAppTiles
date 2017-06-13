@@ -2,14 +2,15 @@ package me.manasrawat.quickapptiles;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.KeyguardManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
 import android.os.Build;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
@@ -20,38 +21,31 @@ import android.util.Log;
 @TargetApi(Build.VERSION_CODES.N)
 public class AppTileService extends TileService {
 
-    public String pack, TAG = getClass().getSimpleName();
-    public Tile tile;
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        super.onStartCommand(intent, flags, startId);
-        requestListeningState(getApplicationContext(), new ComponentName(getApplicationContext(), AppTileService.class));
-        return START_REDELIVER_INTENT;
-    }
+    private String pack;
+    private final String TAG = getClass().getSimpleName();
 
     @Override
     public void onTileAdded() {
-        super.onTileAdded();
+        requestListeningState(this, new ComponentName(this, getClass()));
         Log.i(TAG, "Tile added");
-        requestListeningState(getApplicationContext(), new ComponentName(getApplicationContext(), AppTileService.class));
+        super.onTileAdded();
     }
 
     @Override
     public void onTileRemoved() {
-        super.onTileRemoved();
         Log.i(TAG, "Tile removed");
+        super.onTileRemoved();
     }
 
     @Override
     public void onStartListening () {
-        super.onStartListening();
-        tile = getQsTile();
+        Log.i(TAG, "Started listening");
+        Tile tile = getQsTile();
         tile.setState(Tile.STATE_ACTIVE);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         String label = sharedPreferences.getString("label", getString(R.string.app_name));
-        pack = sharedPreferences.getString("pack", getApplicationContext().getPackageName());
+        pack = sharedPreferences.getString("pack", this.getPackageName());
         tile.setLabel(label);
 
         String encoded = sharedPreferences.getString("icon", "icon");
@@ -61,36 +55,41 @@ public class AppTileService extends TileService {
         tile.setIcon(icon);
 
         tile.updateTile();
-        Log.i(TAG, "Started listening; state = " + tile.getState());
+        Log.i(TAG, "Updated tile");
+        super.onStartListening();
     }
 
     @Override
     public void onStopListening () {
-        super.onStartListening();
         Log.i(TAG, "Stopped listening");
+        super.onStopListening();
     }
 
     @Override
     public void onClick() {
-        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-        if (keyguardManager.inKeyguardRestrictedInputMode()) {
-            Log.i(TAG, "Device is locked");
+        requestListeningState(this, new ComponentName(this, getClass()));
+        if (isLocked()) {
             unlockAndRun(new Runnable() {
                 @Override
                 public void run() {
-                    launchApp();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            launchApp();
+                        }
+                    }, 200);
                 }
             });
         } else {
-            Log.i(TAG, "Device is unlocked");
             launchApp();
         }
     }
 
-    public void launchApp() {
-        Intent launch = getPackageManager().getLaunchIntentForPackage(pack);
+    private void launchApp() {
+        PackageManager packMan = getPackageManager();
+        Intent launch = packMan.getLaunchIntentForPackage(pack);
         if (launch == null) {
-            launch = getPackageManager().getLaunchIntentForPackage(getPackageName());
+            launch = packMan.getLaunchIntentForPackage(getPackageName());
         }
         startActivityAndCollapse(launch);
     }

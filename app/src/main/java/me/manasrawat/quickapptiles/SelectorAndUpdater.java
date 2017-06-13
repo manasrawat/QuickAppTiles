@@ -10,9 +10,9 @@ import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
 
-public class SelectorAndUpdater {
+class SelectorAndUpdater {
 
-    public SelectorAndUpdater(Context context, Drawable icon, String pack, String label) {
+    SelectorAndUpdater(Context context, Drawable icon, String pack, String label) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         Bitmap encodee = ((BitmapDrawable) icon).getBitmap();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();

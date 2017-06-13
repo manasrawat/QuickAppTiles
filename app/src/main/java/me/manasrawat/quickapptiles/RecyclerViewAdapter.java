@@ -14,14 +14,15 @@ import java.util.*;
 
 import static me.manasrawat.quickapptiles.ApplicationActivity.*;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>  {
+class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>  {
 
-    public List<ApplicationInfo> list;
-    public int lastCheckedPosition, checkedPosition;
+    int checkedPosition;
+    private List<ApplicationInfo> list;
+    private int lastCheckedPosition;
     private String TAG = getClass().getSimpleName();
     private SharedPreferences.Editor editor;
 
-    public RecyclerViewAdapter(List<ApplicationInfo> theList) {
+    RecyclerViewAdapter(List<ApplicationInfo> theList) {
         list = theList;
         editor = sharedPreferences.edit();
 
@@ -37,20 +38,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 checkedPosition = sharedPreferences.getInt("item", -1);
                 if (checkedPosition == list.size()) checkedPosition--;
                 setFor(checkedPosition);
-                new TileLauncher(context, packMan, TAG);
+                new AppTileLauncher(context, packMan, TAG);
             } else {
                 checkedPosition = i - 1;
             }
         }
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public ImageView appIcon;
-        public TextView appName;
-        public RadioButton appSelect;
-        public RelativeLayout appRecyclee;
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView appIcon;
+        TextView appName;
+        RadioButton appSelect;
+        RelativeLayout appRecyclee;
 
-        public ViewHolder(View v) {
+        ViewHolder(View v) {
             super(v);
             appIcon = (ImageView) v.findViewById(R.id.appIcon);
             appName = (TextView) v.findViewById(R.id.appName);
@@ -62,8 +63,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public RecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclee, parent, false);
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        return new ViewHolder(v);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     selectAndUpdate(adapterPosition, icon, pack, label);
 
                     Log.i(TAG, label + " selected");
-                    new TileLauncher(context, packMan, TAG);
+                    new AppTileLauncher(context, packMan, TAG);
                     notifyItemChanged(lastCheckedPosition);
                     notifyItemChanged(checkedPosition);
                 }
@@ -103,13 +103,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return list.size();
     }
 
-    public int findDefaultPos() {
+    private int findDefaultPos() {
         int i; boolean cont; for (i = 0, cont = true; i <  list.size() && cont; i++)
             if (list.get(i).packageName.equals(context.getPackageName())) cont = false;
         return i - 1;
     }
 
-    public void removeAt(int i) {
+    void removeAt(int i) {
         list.remove(i);
         notifyItemRemoved(i);
         if (checkedPosition > i) {
@@ -125,7 +125,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         notifyItemRangeChanged(i, list.size());
     }
 
-    public void insertAt(int i) {
+    void insertAt(int i) {
         notifyItemInserted(i);
         if (checkedPosition >= i) {
             editor.putInt("item", checkedPosition + 1).apply();
@@ -141,7 +141,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         selectAndUpdate(i, icon, pack, label);
     }
 
-    public void selectAndUpdate(int adapterPosition, Drawable icon, String pack, String label) {
+    private void selectAndUpdate(int adapterPosition, Drawable icon, String pack, String label) {
         lastCheckedPosition = checkedPosition;
         checkedPosition = adapterPosition;
         editor.putInt("item", adapterPosition).apply();

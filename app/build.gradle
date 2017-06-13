@@ -8,8 +8,8 @@ android {
         applicationId "me.manasrawat.quickapptiles"
         minSdkVersion 22
         targetSdkVersion 25
-        versionCode 3
-        versionName "3.0"
+        versionCode 4
+        versionName "4.0 (RELEASE)"
     }
     buildTypes {
         release {

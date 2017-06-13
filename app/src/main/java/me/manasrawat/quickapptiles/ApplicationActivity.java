@@ -21,11 +21,10 @@ import static android.service.quicksettings.TileService.ACTION_QS_TILE_PREFERENC
 
 public class ApplicationActivity extends AppCompatActivity {
 
-    public static Context context;
-    public static PackageManager packMan;
-    public static SharedPreferences sharedPreferences;
-    public static RecyclerView recyclerView;
     public static LinearLayoutManager layoutManager;
+    static Context context;
+    static PackageManager packMan;
+    static SharedPreferences sharedPreferences;
     private List<ApplicationInfo> trimmedList;
     private BroadcastReceiver additionOrRemovalReceiver;
     private RecyclerViewAdapter adapter;
@@ -46,7 +45,7 @@ public class ApplicationActivity extends AppCompatActivity {
         }
 
         //RecyclerViewAdapter inflation
-        recyclerView = (RecyclerView) findViewById(R.id.recyclees);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclees);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
@@ -55,6 +54,7 @@ public class ApplicationActivity extends AppCompatActivity {
         getApps();
         adapter = new RecyclerViewAdapter(trimmedList);
         recyclerView.setAdapter(adapter);
+        layoutManager.scrollToPositionWithOffset(adapter.checkedPosition, 0);
 
         additionOrRemovalReceiver = new BroadcastReceiver() {
             @Override
@@ -90,11 +90,9 @@ public class ApplicationActivity extends AppCompatActivity {
         intentFilter.addAction(ACTION_PACKAGE_REMOVED);
         intentFilter.addAction(ACTION_PACKAGE_CHANGED);
         registerReceiver(additionOrRemovalReceiver, intentFilter);
-
-        layoutManager.scrollToPositionWithOffset(adapter.checkedPosition, 0);
     }
 
-    public void getApps() {
+    private void getApps() {
         List<ApplicationInfo> list = packMan.getInstalledApplications(PackageManager.GET_META_DATA);
         for (ApplicationInfo appInfo : list) if (packMan.getLaunchIntentForPackage(appInfo.packageName) != null)
             trimmedList.add(appInfo);

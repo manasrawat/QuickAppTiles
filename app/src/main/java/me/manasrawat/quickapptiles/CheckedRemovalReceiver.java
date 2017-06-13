@@ -12,7 +12,7 @@ import static android.content.Intent.ACTION_PACKAGE_REMOVED;
 
 public class CheckedRemovalReceiver extends BroadcastReceiver {
 
-    private String TAG = getClass().getSimpleName();
+    private final String TAG = getClass().getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -24,7 +24,7 @@ public class CheckedRemovalReceiver extends BroadcastReceiver {
                                    ContextCompat.getDrawable(context, R.mipmap.icon),
                                    context.getPackageName(),
                                    context.getString(R.string.app_name));
-            new TileLauncher(context, context.getPackageManager(), TAG);
+            new AppTileLauncher(context, context.getPackageManager(), TAG);
         }
     }
 

@@ -16,9 +16,9 @@ import cyanogenmod.app.CustomTile;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
-public class CMTileBuilder {
+class CMTileBuilder {
 
-    public CMTileBuilder(Context context, PackageManager packMan) {
+    CMTileBuilder(Context context, PackageManager packMan) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         String pack = sharedPreferences.getString("pack", context.getPackageName());
