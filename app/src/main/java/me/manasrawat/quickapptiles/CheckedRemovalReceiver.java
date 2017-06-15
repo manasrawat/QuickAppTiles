@@ -24,7 +24,7 @@ public class CheckedRemovalReceiver extends BroadcastReceiver {
                                    ContextCompat.getDrawable(context, R.mipmap.icon),
                                    context.getPackageName(),
                                    context.getString(R.string.app_name));
-            new AppTileLauncher(context, context.getPackageManager(), TAG);
+            new AppTileLauncher(context, context.getPackageManager(), TAG, false);
         }
     }
 

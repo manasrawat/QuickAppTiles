@@ -38,7 +38,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewH
                 checkedPosition = sharedPreferences.getInt("item", -1);
                 if (checkedPosition == list.size()) checkedPosition--;
                 setFor(checkedPosition);
-                new AppTileLauncher(context, packMan, TAG);
+                new AppTileLauncher(context, packMan, TAG, false);
             } else {
                 checkedPosition = i - 1;
             }
@@ -87,7 +87,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewH
                     selectAndUpdate(adapterPosition, icon, pack, label);
 
                     Log.i(TAG, label + " selected");
-                    new AppTileLauncher(context, packMan, TAG);
+                    new AppTileLauncher(context, packMan, TAG, false);
                     notifyItemChanged(lastCheckedPosition);
                     notifyItemChanged(checkedPosition);
                 }

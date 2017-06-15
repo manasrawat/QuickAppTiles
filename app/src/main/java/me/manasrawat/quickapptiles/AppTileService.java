@@ -1,6 +1,5 @@
 package me.manasrawat.quickapptiles;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -17,7 +16,6 @@ import android.service.quicksettings.TileService;
 import android.util.Base64;
 import android.util.Log;
 
-@SuppressLint("Override")
 @TargetApi(Build.VERSION_CODES.N)
 public class AppTileService extends TileService {
 
@@ -41,11 +39,10 @@ public class AppTileService extends TileService {
     public void onStartListening () {
         Log.i(TAG, "Started listening");
         Tile tile = getQsTile();
-        tile.setState(Tile.STATE_ACTIVE);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         String label = sharedPreferences.getString("label", getString(R.string.app_name));
-        pack = sharedPreferences.getString("pack", this.getPackageName());
+        pack = sharedPreferences.getString("pack", getPackageName());
         tile.setLabel(label);
 
         String encoded = sharedPreferences.getString("icon", "icon");
@@ -54,6 +51,7 @@ public class AppTileService extends TileService {
         Icon icon = Icon.createWithBitmap(decodee);
         tile.setIcon(icon);
 
+        tile.setState(pack.equals(getPackageName()) ? Tile.STATE_INACTIVE : Tile.STATE_ACTIVE );
         tile.updateTile();
         Log.i(TAG, "Updated tile");
         super.onStartListening();
@@ -67,7 +65,6 @@ public class AppTileService extends TileService {
 
     @Override
     public void onClick() {
-        requestListeningState(this, new ComponentName(this, getClass()));
         if (isLocked()) {
             unlockAndRun(new Runnable() {
                 @Override
