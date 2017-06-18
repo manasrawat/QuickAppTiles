@@ -15,7 +15,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         if (ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            new AppTileLauncher(context, context.getPackageManager(), TAG, true);
+            new AppTileLauncher(context, context.getPackageManager(), TAG);
             Log.i(TAG, "Device booted");
         }
     }

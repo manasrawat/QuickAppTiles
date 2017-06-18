@@ -85,7 +85,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewH
                     selectAndUpdate(adapterPosition, icon, pack, label);
 
                     Log.i(TAG, label + " selected");
-                    new AppTileLauncher(context, packMan, TAG, false);
+                    new AppTileLauncher(context, packMan, TAG);
                     notifyItemChanged(lastCheckedPosition);
                     notifyItemChanged(checkedPosition);
                 }

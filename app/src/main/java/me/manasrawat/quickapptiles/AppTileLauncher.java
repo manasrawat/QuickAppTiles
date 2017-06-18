@@ -9,13 +9,13 @@ import cyanogenmod.os.Build;
 
 class AppTileLauncher {
 
-    AppTileLauncher(Context context, PackageManager packMan, final String TAG, boolean onBoot) {
+    AppTileLauncher(Context context, PackageManager packMan, final String TAG) {
         if (Build.CM_VERSION.SDK_INT > 0 &&
            (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.LOLLIPOP_MR1 ||
             android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.M)) {
             new CMTileBuilder(context, packMan);
         } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            if (!onBoot) AppTileService.requestListeningState(context, new ComponentName(context, AppTileService.class));
+            AppTileService.requestListeningState(context, new ComponentName(context, AppTileService.class));
         } else {
             Toast.makeText(context, "Unsupported CM/Android version", Toast.LENGTH_SHORT).show();
             Log.i(TAG, "Unsupported CM/Android version");
