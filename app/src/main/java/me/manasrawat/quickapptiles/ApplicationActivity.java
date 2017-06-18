@@ -79,7 +79,6 @@ public class ApplicationActivity extends AppCompatActivity {
                                 !(previousList.get(i).packageName.equals(trimmedList.get(i).packageName))) ||
                                 i == trimmedList.size() - 1) cont = false;
                     adapter.insertAt(i - 1);
-                    layoutManager.scrollToPositionWithOffset(i - 1, 0);
                 }
             }
         };
@@ -94,7 +93,9 @@ public class ApplicationActivity extends AppCompatActivity {
 
     private void getApps() {
         List<ApplicationInfo> list = packMan.getInstalledApplications(PackageManager.GET_META_DATA);
-        for (ApplicationInfo appInfo : list) if (packMan.getLaunchIntentForPackage(appInfo.packageName) != null)
+        for (ApplicationInfo appInfo : list)
+            if (packMan.getLaunchIntentForPackage(appInfo.packageName) != null &&
+                    !appInfo.packageName.equals(getPackageName()))
             trimmedList.add(appInfo);
         Collections.sort(trimmedList, new ApplicationInfo.DisplayNameComparator(packMan));
     }

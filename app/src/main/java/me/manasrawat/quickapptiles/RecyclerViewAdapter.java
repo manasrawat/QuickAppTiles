@@ -28,17 +28,15 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewH
 
         if (sharedPreferences.getBoolean("initial", true)) {
             editor.putBoolean("initial", false).apply();
-            checkedPosition = findDefaultPos();
-            setFor(checkedPosition);
+            checkedPosition = -1;
+            ApplicationInfo info = context.getApplicationInfo();
+            selectAndUpdate(checkedPosition, packMan.getApplicationIcon(info), info.packageName, "Select App");
         } else {
             int i; boolean cont; for (i = 0, cont = true; i < list.size() && cont; i++)
                 if (list.get(i).packageName.equals(sharedPreferences.getString("pack", context.getPackageName())))
                     cont = false;
             if (cont) {
-                checkedPosition = sharedPreferences.getInt("item", -1);
-                if (checkedPosition == list.size()) checkedPosition--;
-                setFor(checkedPosition);
-                new AppTileLauncher(context, packMan, TAG, false);
+                checkedPosition = -1;
             } else {
                 checkedPosition = i - 1;
             }
@@ -103,25 +101,20 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewH
         return list.size();
     }
 
-    private int findDefaultPos() {
-        int i; boolean cont; for (i = 0, cont = true; i <  list.size() && cont; i++)
-            if (list.get(i).packageName.equals(context.getPackageName())) cont = false;
-        return i - 1;
-    }
-
     void removeAt(int i) {
         list.remove(i);
         notifyItemRemoved(i);
+        boolean check = false;
         if (checkedPosition > i) {
             editor.putInt("item", checkedPosition - 1).apply();
-            checkedPosition = sharedPreferences.getInt("item", -1);
+            check = true;
         }
         if (checkedPosition == i) {
-            int j = findDefaultPos();
-            editor.putInt("item", j).apply();
+            editor.putInt("item", -1).apply();
             checkedPosition = sharedPreferences.getInt("item", -1);
-            layoutManager.scrollToPositionWithOffset(j, 0);
+            layoutManager.scrollToPositionWithOffset(0, 0);
         }
+        if (check) checkedPosition = sharedPreferences.getInt("item", -1);
         notifyItemRangeChanged(i, list.size());
     }
 
@@ -132,13 +125,6 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewH
             checkedPosition = sharedPreferences.getInt("item", -1);
         }
         notifyItemRangeChanged(i, list.size());
-    }
-
-    public void setFor(int i) {
-        ApplicationInfo info = list.get(i);
-        String label = (String) packMan.getApplicationLabel(info), pack = info.packageName;
-        Drawable icon = packMan.getApplicationIcon(info);
-        selectAndUpdate(i, icon, pack, label);
     }
 
     private void selectAndUpdate(int adapterPosition, Drawable icon, String pack, String label) {

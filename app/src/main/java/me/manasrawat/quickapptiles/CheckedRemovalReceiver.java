@@ -23,7 +23,7 @@ public class CheckedRemovalReceiver extends BroadcastReceiver {
             new SelectorAndUpdater(context,
                                    ContextCompat.getDrawable(context, R.mipmap.icon),
                                    context.getPackageName(),
-                                   context.getString(R.string.app_name));
+                                   "Select App");
             new AppTileLauncher(context, context.getPackageManager(), TAG, false);
         }
     }
