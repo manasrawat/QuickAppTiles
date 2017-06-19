@@ -37,7 +37,7 @@ class CMTileBuilder {
         Bitmap decodee = BitmapFactory.decodeByteArray(bits, 0, bits.length);
 
         CMStatusBarManager.getInstance(context)
-                .publishTile(1, new CustomTile.Builder(context)
+                .publishTile(0, new CustomTile.Builder(context)
                         .setLabel(sharedPreferences.getString("label", context.getString(R.string.app_name)))
                         .setOnClickIntent(pendingIntent)
                         .setOnLongClickIntent(pendingSettings)
