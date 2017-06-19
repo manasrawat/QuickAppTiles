@@ -10,7 +10,6 @@ import cyanogenmod.os.Build;
 class AppTileLauncher {
 
     AppTileLauncher(Context context, PackageManager packMan, final String TAG) {
-        Log.i(TAG, "AppTileLaunched");
         if (Build.CM_VERSION.SDK_INT > 0 &&
            (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.LOLLIPOP_MR1 ||
             android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.M)) {

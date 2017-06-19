@@ -31,6 +31,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewH
             checkedPosition = -1;
             ApplicationInfo info = context.getApplicationInfo();
             selectAndUpdate(checkedPosition, packMan.getApplicationIcon(info), info.packageName, "Select App");
+            new AppTileLauncher(context, packMan, TAG);
         } else {
             int i; boolean cont; for (i = 0, cont = true; i < list.size() && cont; i++)
                 if (list.get(i).packageName.equals(sharedPreferences.getString("pack", context.getPackageName())))
