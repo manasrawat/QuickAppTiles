@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Base64;
-import android.util.Log;
 import cyanogenmod.app.CMStatusBarManager;
 import cyanogenmod.app.CustomTile;
 
@@ -20,7 +19,6 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 class CMTileBuilder {
 
     CMTileBuilder(Context context, PackageManager packMan) {
-        Log.i(getClass().getSimpleName(), "CM Tile added");
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         String pack = sharedPreferences.getString("pack", context.getPackageName());

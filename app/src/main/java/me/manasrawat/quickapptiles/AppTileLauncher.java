@@ -14,6 +14,7 @@ class AppTileLauncher {
            (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.LOLLIPOP_MR1 ||
             android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.M)) {
             new CMTileBuilder(context, packMan);
+            Log.i(TAG, "CM Tile added");
         } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             AppTileService.requestListeningState(context, new ComponentName(context, AppTileService.class));
         } else {

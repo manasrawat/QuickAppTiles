@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import cyanogenmod.os.Build;
 
 import java.util.*;
 
@@ -31,7 +32,6 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewH
             checkedPosition = -1;
             ApplicationInfo info = context.getApplicationInfo();
             selectAndUpdate(checkedPosition, packMan.getApplicationIcon(info), info.packageName, "Select App");
-            new AppTileLauncher(context, packMan, TAG);
         } else {
             int i; boolean cont; for (i = 0, cont = true; i < list.size() && cont; i++)
                 if (list.get(i).packageName.equals(sharedPreferences.getString("pack", context.getPackageName())))
@@ -42,6 +42,10 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewH
                 checkedPosition = i - 1;
             }
         }
+        if (Build.CM_VERSION.SDK_INT > 0 &&
+                (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.LOLLIPOP_MR1 ||
+                        android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.M))
+            new AppTileLauncher(context, packMan, TAG);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
