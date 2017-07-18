@@ -20,28 +20,23 @@ class CMTileBuilder {
 
     CMTileBuilder(Context context, PackageManager packMan) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-
         String pack = sharedPreferences.getString("pack", context.getPackageName());
 
-        Intent prependIntent = packMan.getLaunchIntentForPackage(pack);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, prependIntent, FLAG_UPDATE_CURRENT);
-
-        Intent settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        settingsIntent.setData(Uri.parse("package:" + pack));
-        PendingIntent pendingSettings = PendingIntent.getActivity(context, 0, settingsIntent, FLAG_UPDATE_CURRENT);
-
-        String encoded = sharedPreferences.getString("icon", "icon");
-        byte[] bits = Base64.decode(encoded.getBytes(), Base64.DEFAULT);
+        byte[] bits = Base64.decode(sharedPreferences.getString("icon", "icon").getBytes(), Base64.DEFAULT);
         Bitmap decodee = BitmapFactory.decodeByteArray(bits, 0, bits.length);
 
-        CMStatusBarManager.getInstance(context)
-                .publishTile(0, new CustomTile.Builder(context)
-                        .setLabel(sharedPreferences.getString("label", context.getString(R.string.app_name)))
-                        .setOnClickIntent(pendingIntent)
-                        .setOnLongClickIntent(pendingSettings)
-                        .setIcon(decodee)
-                        .build()
-                );
-    }
+        PendingIntent launchPend = PendingIntent.getActivity(context, 0,
+                packMan.getLaunchIntentForPackage(pack), FLAG_UPDATE_CURRENT);
+        PendingIntent settingsPend = PendingIntent.getActivity(context, 0,
+                new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        .setData(Uri.parse("package:" + pack)), FLAG_UPDATE_CURRENT);
 
+        CMStatusBarManager.getInstance(context)
+                .publishTile(context.getString(R.string.app_name), 0, new CustomTile.Builder(context)
+                        .setLabel(sharedPreferences.getString("label", context.getString(R.string.app_name)))
+                        .setOnClickIntent(launchPend)
+                        .setOnLongClickIntent(settingsPend)
+                        .setIcon(decodee)
+                        .build());
+    }
 }
